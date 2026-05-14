@@ -1,247 +1,432 @@
-import { useState } from "react";
-import axios from "axios";
-
 function App() {
-  const [emailContent, setEmailContent] = useState("");
-  const [tone, setTone] = useState("");
-  const [generatedReply, setGeneratedReply] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [copied, setCopied] = useState(false);
-  const API_URL =
-    import.meta.env.VITE_API_URL;
-  console.log(API_URL);
-  
-  const handleSubmit = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const response = await axios.post(
-        `${API_URL}/api/email/generate`,
-        { emailContent, tone },
-      );
-      setGeneratedReply(
-        typeof response.data === "string"
-          ? response.data
-          : JSON.stringify(response.data),
-      );
-    } catch (error) {
-      setError("Failed to generate email reply. Please try again");
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(generatedReply);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
-        {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-10 lg:mb-16">
-          <div className="inline-flex items-center gap-2 mb-4">
-            <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shadow-md">
-              <svg
-                className="w-5 h-5 text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8"
-                />
-              </svg>
-            </div>
-            <span className="text-xs font-semibold tracking-widest text-indigo-600 uppercase">
-              AI Powered
-            </span>
+    <>
+      <style>{`
+        :root {
+          --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+          --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+          --color-background-primary: #ffffff;
+          --color-background-secondary: #f6f7f9;
+          --color-border-tertiary: #e5e7eb;
+          --color-text-primary: #15171a;
+          --color-text-secondary: #667085;
+          --border-radius-md: 10px;
+          --border-radius-lg: 16px;
+        }
+
+        * {
+          box-sizing: border-box;
+          margin: 0;
+          padding: 0;
+        }
+
+        body {
+          font-family: var(--font-sans);
+          background: var(--color-background-primary);
+        }
+
+        .page-shell {
+          min-height: 100vh;
+        }
+
+        .hero {
+          text-align: center;
+          padding: 3rem 1.5rem 2rem;
+        }
+
+        .badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: var(--color-background-secondary);
+          border: 0.5px solid var(--color-border-tertiary);
+          border-radius: 999px;
+          padding: 4px 14px;
+          font-size: 12px;
+          color: var(--color-text-secondary);
+          margin-bottom: 1.25rem;
+        }
+
+        .badge-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #22c55e;
+        }
+
+        h1 {
+          font-size: 28px;
+          font-weight: 500;
+          color: var(--color-text-primary);
+          line-height: 1.3;
+        }
+
+        .sub {
+          font-size: 15px;
+          color: var(--color-text-secondary);
+          margin-top: 10px;
+          line-height: 1.6;
+        }
+
+        .divider {
+          border: none;
+          border-top: 0.5px solid var(--color-border-tertiary);
+          margin: 0 1.5rem;
+        }
+
+        .section {
+          padding: 2rem 1.5rem;
+        }
+
+        .section-title {
+          font-size: 13px;
+          font-weight: 500;
+          color: var(--color-text-secondary);
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          margin-bottom: 1.25rem;
+        }
+
+        .download-card {
+          background: var(--color-background-primary);
+          border: 0.5px solid var(--color-border-tertiary);
+          border-radius: var(--border-radius-lg);
+          padding: 1.25rem;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 1rem;
+          flex-wrap: wrap;
+        }
+
+        .download-info {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .dl-icon {
+          width: 40px;
+          height: 40px;
+          border-radius: var(--border-radius-md);
+          background: var(--color-background-secondary);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          color: var(--color-text-secondary);
+        }
+
+        .dl-title {
+          font-size: 14px;
+          font-weight: 500;
+          color: var(--color-text-primary);
+        }
+
+        .dl-sub {
+          font-size: 12px;
+          color: var(--color-text-secondary);
+          margin-top: 2px;
+        }
+
+        .btn-primary {
+          display: inline-flex;
+          align-items: center;
+          background: var(--color-text-primary);
+          color: var(--color-background-primary);
+          border-radius: var(--border-radius-md);
+          padding: 8px 16px;
+          font-size: 13px;
+          font-weight: 500;
+          cursor: pointer;
+          text-decoration: none;
+          white-space: nowrap;
+        }
+
+        .btn-primary:hover {
+          opacity: 0.85;
+        }
+
+        .steps {
+          display: flex;
+          flex-direction: column;
+          gap: 0;
+        }
+
+        .step {
+          display: flex;
+          gap: 16px;
+          padding: 1rem 0;
+          border-bottom: 0.5px solid var(--color-border-tertiary);
+        }
+
+        .step:last-child {
+          border-bottom: none;
+        }
+
+        .step-num {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: var(--color-background-secondary);
+          border: 0.5px solid var(--color-border-tertiary);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+          font-weight: 500;
+          color: var(--color-text-secondary);
+          flex-shrink: 0;
+          margin-top: 1px;
+        }
+
+        .step-body {
+          flex: 1;
+        }
+
+        .step-title {
+          font-size: 14px;
+          font-weight: 500;
+          color: var(--color-text-primary);
+          margin-bottom: 4px;
+        }
+
+        .step-desc {
+          font-size: 13px;
+          color: var(--color-text-secondary);
+          line-height: 1.6;
+        }
+
+        .inline-code {
+          font-family: var(--font-mono);
+          font-size: 12px;
+        }
+
+        .highlight-link {
+          color: var(--color-text-primary);
+          font-weight: 600;
+          text-decoration: underline;
+          text-decoration-color: #22c55e;
+          text-decoration-thickness: 2px;
+          text-underline-offset: 3px;
+        }
+
+        .highlight-link:hover {
+          color: #15803d;
+        }
+
+        .code-block {
+          background: var(--color-background-secondary);
+          border: 0.5px solid var(--color-border-tertiary);
+          border-radius: var(--border-radius-md);
+          color: var(--color-text-primary);
+          font-family: var(--font-mono);
+          font-size: 12px;
+          line-height: 1.7;
+          margin-top: 8px;
+          overflow-x: auto;
+          padding: 10px 14px;
+          white-space: pre;
+        }
+
+        .footer-note {
+          font-size: 12px;
+          color: var(--color-text-secondary);
+          text-align: center;
+          padding: 1.5rem;
+        }
+      `}</style>
+
+      <main className="page-shell">
+        <div className="hero">
+          <div className="badge">
+            <span className="badge-dot"></span> Chrome Extension
           </div>
-
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900">
-            Email Reply Generator
-          </h1>
-
-          <p className="mt-3 text-sm sm:text-base text-slate-500">
-            Paste an email and generate a smart, contextual reply instantly.
+          <h1>Smart Email Writer</h1>
+          <p className="sub">
+            Complete setup guide for the SEW repo with backend and extension
+            folders.
           </p>
         </div>
 
-        {/* Main Grid */}
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
-          {/* LEFT: Input Card */}
-          <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-6 sm:p-8 space-y-6">
-            {/* Email Input */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Original Email
-              </label>
-              <textarea
-                rows={8}
-                value={emailContent}
-                onChange={(e) => setEmailContent(e.target.value)}
-                placeholder="Paste the email you'd like to reply to..."
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm sm:text-base text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none transition"
-              />
-            </div>
+        <hr className="divider" />
 
-            {/* Tone Selector */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Tone <span className="text-slate-400">(Optional)</span>
-              </label>
-
-              <select
-                value={tone}
-                onChange={(e) => setTone(e.target.value)}
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm sm:text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-              >
-                <option value="">Default (Smart Tone)</option>
-
-                <optgroup label="Professional">
-                  <option value="Professional">Professional</option>
-                  <option value="Formal">Formal</option>
-                  <option value="Concise">Concise</option>
-                  <option value="Executive">Executive</option>
-                  <option value="Diplomatic">Diplomatic</option>
-                  <option value="Assertive">Assertive</option>
-                </optgroup>
-
-                <optgroup label="Friendly & Casual">
-                  <option value="Friendly">Friendly</option>
-                  <option value="Casual">Casual</option>
-                  <option value="Warm">Warm</option>
-                  <option value="Conversational">Conversational</option>
-                  <option value="Light">Light & Polite</option>
-                </optgroup>
-
-                <optgroup label="Intent-Based">
-                  <option value="Apologetic">Apologetic</option>
-                  <option value="Grateful">Grateful</option>
-                  <option value="Encouraging">Encouraging</option>
-                  <option value="Follow-up">Follow-up Reminder</option>
-                  <option value="Decline">Decline Politely</option>
-                  <option value="Clarification">Request Clarification</option>
-                </optgroup>
-              </select>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              onClick={handleSubmit}
-              disabled={!emailContent || loading}
-              className="w-full flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-5 py-4 text-sm sm:text-base font-semibold text-white hover:bg-indigo-700 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md"
-            >
-              {loading ? (
-                <>
-                  <svg
-                    className="animate-spin w-5 h-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v8H4z"
-                    />
-                  </svg>
-                  Generating...
-                </>
-              ) : (
-                "Generate Reply"
-              )}
-            </button>
-
-            {error && (
-              <div className="rounded-xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-600">
-                {error}
+        <section className="section">
+          <div className="section-title">Get the project</div>
+          <div className="download-card">
+            <div className="download-info">
+              <div className="dl-icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M10 4a2 2 0 0 1 4 0v2h2a2 2 0 0 1 2 2v2h2a2 2 0 1 1 0 4h-2v2a2 2 0 0 1-2 2h-2v2a2 2 0 1 1-4 0v-2H8a2 2 0 0 1-2-2v-2H4a2 2 0 1 1 0-4h2V8a2 2 0 0 1 2-2h2V4Z"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </div>
-            )}
+              <div>
+                <div className="dl-title">SEW Project</div>
+                <div className="dl-sub">
+                  One repo containing backend and extension folders
+                </div>
+              </div>
+            </div>
+            <a
+              href="https://github.com/atharv96k/Smart-Email-Writer"
+              className="btn-primary"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Open repo
+            </a>
           </div>
+        </section>
 
-          {/* RIGHT: Output Card */}
-          <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-6 sm:p-8 flex flex-col">
-            <h2 className="text-sm font-semibold text-slate-700 mb-4">
-              Generated Reply
-            </h2>
+        <hr className="divider" />
 
-            <textarea
-              rows={14}
-              readOnly
-              value={generatedReply}
-              placeholder="Your generated reply will appear here..."
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm sm:text-base text-slate-800 resize-none focus:outline-none"
-            />
+        <section className="section">
+          <div className="section-title">Project structure</div>
+          <div className="steps">
+            <div className="step">
+              <div className="step-num">1</div>
+              <div className="step-body">
+                <div className="step-title">Clone or download the repo</div>
+                <div className="step-desc">
+                  Download the{" "}
+                  <a
+                    href="https://github.com/atharv96k/Smart-Email-Writer/blob/main/extension.zip"
+                    className="highlight-link"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    extension ZIP from GitHub
+                  </a>{" "}
+                  or clone the repository to your system.
+                </div>
+              </div>
+            </div>
 
-            {generatedReply && (
-              <button
-                onClick={handleCopy}
-                className="mt-4 w-full sm:w-auto sm:self-start flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white hover:bg-indigo-700 active:scale-[0.98] transition-all duration-200 shadow-sm"
-              >
-                {copied ? (
-                  <>
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                    Copied!
-                  </>
-                ) : (
-                  <>
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                      />
-                    </svg>
-                    Copy to Clipboard
-                  </>
-                )}
-              </button>
-            )}
+            <div className="step">
+              <div className="step-num">2</div>
+              <div className="step-body">
+                <div className="step-title">Open the SEW parent folder</div>
+                <div className="step-desc">
+                  After extracting or cloning, your project should look like
+                  this:
+                </div>
+                <div className="code-block">{`SEW/
+  backend/
+  extension/`}</div>
+              </div>
+            </div>
           </div>
+        </section>
+
+        <hr className="divider" />
+
+        <section className="section">
+          <div className="section-title">Run backend in Spring Tool Suite</div>
+          <div className="steps">
+            <div className="step">
+              <div className="step-num">1</div>
+              <div className="step-body">
+                <div className="step-title">Import the backend folder</div>
+                <div className="step-desc">
+                  Open Spring Tool Suite, then go to{" "}
+                  <strong>
+                    File &gt; Import &gt; Maven &gt; Existing Maven Projects
+                  </strong>
+                  . Select the <code className="inline-code">SEW/backend</code>{" "}
+                  folder and finish the import.
+                </div>
+              </div>
+            </div>
+
+            <div className="step">
+              <div className="step-num">2</div>
+              <div className="step-body">
+                <div className="step-title">Run the backend app</div>
+                <div className="step-desc">
+                  In STS, open the main Spring Boot application file, then click{" "}
+                  <strong>Run As &gt; Spring Boot App</strong>.
+                </div>
+              </div>
+            </div>
+
+            <div className="step">
+              <div className="step-num">3</div>
+              <div className="step-body">
+                <div className="step-title">Confirm server is running</div>
+                <div className="step-desc">
+                  The backend should start on{" "}
+                  <code className="inline-code">http://localhost:8080</code>.
+                  Keep it running while using the Chrome extension.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <hr className="divider" />
+
+        <section className="section">
+          <div className="section-title">Load in Chrome</div>
+          <div className="steps">
+            <div className="step">
+              <div className="step-num">1</div>
+              <div className="step-body">
+                <div className="step-title">Open Chrome extensions</div>
+                <div className="step-desc">
+                  Go to <code className="inline-code">chrome://extensions</code>{" "}
+                  and enable <strong>Developer mode</strong> using the toggle in
+                  the top right.
+                </div>
+              </div>
+            </div>
+
+            <div className="step">
+              <div className="step-num">2</div>
+              <div className="step-body">
+                <div className="step-title">Load unpacked extension</div>
+                <div className="step-desc">
+                  Click <strong>Load unpacked</strong>, then select the{" "}
+                  <code className="inline-code">SEW/extension</code> folder.
+                </div>
+              </div>
+            </div>
+
+            <div className="step">
+              <div className="step-num">3</div>
+              <div className="step-body">
+                <div className="step-title">Check backend URL</div>
+                <div className="step-desc">
+                  The extension already includes the backend URL configuration
+                  in the repo. For local setup it should point to{" "}
+                  <code className="inline-code">http://localhost:8080</code>.
+                </div>
+              </div>
+            </div>
+
+            <div className="step">
+              <div className="step-num">4</div>
+              <div className="step-body">
+                <div className="step-title">Open Gmail</div>
+                <div className="step-desc">
+                  Open Gmail in Chrome. The AI Reply button will appear inside
+                  Gmail after the extension is loaded.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div className="footer-note">
+          Keep the backend running from STS before using the extension in Gmail.
         </div>
-      </div>
-      <footer className="mt-16 border-t border-slate-200 bg-gradient-to-r from-white to-slate-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center">
-          <p className="text-xs sm:text-sm text-slate-500 tracking-wide">
-            © {new Date().getFullYear()} Email Reply Generator. All rights
-            reserved.
-          </p>
-        </div>
-      </footer>
-    </div>
+      </main>
+    </>
   );
 }
 
