@@ -55,7 +55,7 @@ function App() {
           </div>
 
           <a
-            href="https://github.com/atharv96k/Smart-Email-Writer"
+            href="https://github.com/atharv96k/SEW-EXTENSION"
             className="btn-primary"
             target="_blank"
             rel="noreferrer"
@@ -87,7 +87,7 @@ function App() {
               <div className="step-desc">
                 Download the{" "}
                 <a
-                  href="https://github.com/atharv96k/Smart-Email-Writer/blob/main/extension.zip"
+                  href="https://github.com/atharv96k/SEW-EXTENSION"
                   className="highlight-link"
                   target="_blank"
                   rel="noreferrer"
